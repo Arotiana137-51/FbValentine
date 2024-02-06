@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import './App.css';
 
 const phrases = [
@@ -17,25 +17,69 @@ const phrases = [
 
 
 function App() {
-  const[noCount, setNoCount] = useState(0);
+  const [noCount, setNoCount] = useState(0);
   const [yesPressed, setYesPressed] = useState(false);
   const yesButtonSize = noCount * 20 + 16;
+
+  useEffect(() => {
+    const script = document.createElement('script');
+    script.src = "https://connect.facebook.net/en_US/fbinstant.6.2.js";
+    script.id = "fbinstant";
+    document.body.appendChild(script);
+
+    script.onload = () => {
+      window.FBInstant.initializeAsync().then(function () {
+        // load assets
+
+        var progress = 0;
+
+        var interval = setInterval(function () {
+          progress += 5;
+          window.FBInstant.setLoadingProgress(progress);
+
+          if (progress >= 55) {
+            clearInterval(interval);
+            window.FBInstant.startGameAsync().then(function () {
+              // Retrieving context and player information can only be done
+              // once startGameAsync() resolves
+              var contextId = window.FBInstant.context.getID();
+              var contextType = window.FBInstant.context.getType();
+
+              var playerName = window.FBInstant.player.getName();
+              var playerPic = window.FBInstant.player.getPhoto();
+              var playerId = window.FBInstant.player.getID();
+
+              // Once startGameAsync() resolves it also means the loading view has
+              // been removed and the user can see the game viewport
+            }
+            );
+          };
+        }, 100)
+      });
+    }
+  }, []);
 
   function handleNoClick() {
     setNoCount(noCount + 1);
     //setYesPressed(false);
   }
 
+  function handleYesClick() {
+    setYesPressed(true);
+   
+  }
   function getNoButtonText() {
     return phrases[Math.min(noCount, phrases.length - 1)];
   }
+
+
   return (
     <div className="valentine-containter">
       {yesPressed ? (
         <>
           <img
             alt="Bears kissing"
-            
+
             src="	https://media.tenor.com/gUiu1zyxfzYAAAAi/bear-kiss-bear-kisses.gif" />
           <h2>Yay!!!</h2>
         </>
@@ -52,7 +96,7 @@ function App() {
             <button
               className="yes-button"
               style={{ fontSize: `${yesButtonSize}px` }}
-              onClick={() => setYesPressed(true)}>
+              onClick={handleYesClick}>
               Yes
             </button>
 
